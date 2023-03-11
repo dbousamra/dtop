@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.0.2/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script type="module">
+    import { h, Component, render } from 'https://esm.sh/preact';
+    import { useEffect, useState } from 'https://esm.sh/preact/hooks';
+
+    import htm from 'https://esm.sh/htm';
+    const html = htm.bind(h);
+
+    const Progress = (props) => {
+
+      const color = props.value > 80 ? 'red' : props.value > 50 ? 'yellow' : 'green';
+
+      return html`
+        <div class="w-full bg-slate-100 h-2">
+          <div class="bg-${color}-400 h-2 rounded" style="width: ${props.value}%" />
+        </div>
+      `
+    }
+
+    const Card = (props) => {
+      return html`
+        <div class="max-w-sm p-8 bg-white border border-gray-200 rounded-lg shadow">
+          <h3 class="text-2xl font-bold text-gray-800">${props.title}</h3>
+          <div class="mt-6">
+            ${props.children}
+          </div>
+        </div>
+      `
+    }
+
+    const Cpu = () => {
+      const [data, setData] = useState({
+        cpus: []
+      });
+
+      useEffect(() => {
+        const interval = setInterval(() => {
+          fetch('/cpu')
+            .then(r => r.json())
+            .then(setData)
+        }, 400);
+
+        return () => clearInterval(interval);
+      }, []);
+
+      return html`
+        <${Card} title="CPU">
+          <div>
+            ${data.cpus.map((cpu, index) => html`
+              <div class="flex items-center">
+                <div class="w-8 text-gray-800">${index + 1}</div>
+                <${Progress} value=${cpu} />
+              </div>
+            `)}
+          </div >
+        </${Card}>
+      `
+    }
+
+    const App = () => {
+      return html`
+        <div class="p-12" >
+          <${Cpu} />
+        </div >
+      `;
+    }
+
+    render(html`<${App} />`, document.body);
+  </script>
+  <title>dtop</title>
+</head>
+
+<body />
+
+</html>
